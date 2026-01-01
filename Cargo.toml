@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = [
+    "contracts/audit-registry",
+    "contracts/usage-meter",
+    "contracts/payment-router",
+]
+
+[workspace.dependencies]
+soroban-sdk = { version = "21.0.1" }
+
+[workspace.package]
+rust-version = "1.78"
