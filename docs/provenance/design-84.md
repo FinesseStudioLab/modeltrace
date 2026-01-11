@@ -1,6 +1,6 @@
-# AI Provenance Chain Design — #69
+# AI Provenance Chain Design — #84
 
-**Author:** Pieter de Vries  **Date:** 2026-01-09
+**Author:** Pieter de Vries  **Date:** 2026-01-11
 
 ## Overview
 
