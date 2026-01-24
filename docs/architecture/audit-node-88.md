@@ -1,6 +1,6 @@
-# Audit Node Architecture — Refactor #31
+# Audit Node Architecture — Refactor #88
 
-**Author:** Pieter de Vries  **Date:** 2026-01-23
+**Author:** Pieter de Vries  **Date:** 2026-01-24
 
 ## Overview
 
