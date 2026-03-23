@@ -1,6 +1,6 @@
-# Lineage Hash Security Analysis — Fix #71
+# Lineage Hash Security Analysis — Fix #25
 
-**Author:** Pieter de Vries  **Date:** 2026-03-21
+**Author:** Pieter de Vries  **Date:** 2026-03-23
 
 ## Issue
 
