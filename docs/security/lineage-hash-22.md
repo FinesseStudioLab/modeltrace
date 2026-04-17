@@ -1,6 +1,6 @@
-# Lineage Hash Security Analysis — Fix #17
+# Lineage Hash Security Analysis — Fix #22
 
-**Author:** Tolu Oladele  **Date:** 2026-04-16
+**Author:** Pieter de Vries  **Date:** 2026-04-17
 
 ## Issue
 
