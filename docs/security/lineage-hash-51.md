@@ -1,6 +1,6 @@
-# Lineage Hash Security Analysis — Fix #30
+# Lineage Hash Security Analysis — Fix #51
 
-**Author:** Tolu Oladele  **Date:** 2026-04-28
+**Author:** Tolu Oladele  **Date:** 2026-04-29
 
 ## Issue
 
