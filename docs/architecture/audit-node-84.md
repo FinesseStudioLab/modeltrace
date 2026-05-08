@@ -1,6 +1,6 @@
-# Audit Node Architecture — Refactor #64
+# Audit Node Architecture — Refactor #84
 
-**Author:** Tolu Oladele  **Date:** 2026-05-06
+**Author:** Pieter de Vries  **Date:** 2026-05-08
 
 ## Overview
 
