@@ -1,26 +1,28 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Modeltrace",
-    template: "%s | Modeltrace",
+    default: "ModelTrace — AI Audit Protocol",
+    template: "%s | ModelTrace",
   },
-  description: "Open-source Stellar Soroban protocol. Part of the GrantFox ecosystem.",
-  keywords: ["stellar", "soroban", "blockchain", "open-source", "web3", "modeltrace"],
+  description: "Immutable AI audit trail on Stellar Soroban. Every model. Every inference. Every bias flag. Cryptographically sealed.",
+  keywords: ["AI audit", "stellar", "soroban", "AI governance", "EU AI Act", "model provenance"],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="bg-[#0a0a0f] text-white antialiased">{children}</body>
+    <html lang="en" className={`${inter.variable} ${mono.variable}`} suppressHydrationWarning>
+      <body className="antialiased">
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
