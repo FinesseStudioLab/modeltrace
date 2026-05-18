@@ -1,19 +1,35 @@
-#![allow(unexpected_cfgs)]
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env};
+
+use soroban_sdk::{
+    contract, contractimpl, contracttype, symbol_short,
+    Address, Env, String,
+};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct State {
-    pub initialized: bool,
+pub struct InferenceSession {
+    pub session_id: u64,
+    pub model_id: u64,
+    pub operator: Address,
+    pub started_at: u64,
+    pub closed_at: u64,
+    pub inference_count: u32,
+    pub total_tokens: u64,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct MeterState {
     pub admin: Address,
+    pub session_count: u64,
+    pub total_inferences: u64,
     pub version: u32,
 }
 
 #[contracttype]
 pub enum DataKey {
     State,
-    Counter,
+    Session(u64),
 }
 
 #[contract]
@@ -21,46 +37,46 @@ pub struct UsageMeterContract;
 
 #[contractimpl]
 impl UsageMeterContract {
-    pub fn initialize(env: Env, admin: Address) -> bool {
+    pub fn initialize(env: Env, admin: Address) {
         if env.storage().instance().has(&DataKey::State) {
             panic!("Already initialized");
         }
         admin.require_auth();
-        let state = State {
-            initialized: true,
-            admin: admin.clone(),
-            version: 1,
-        };
+        let state = MeterState { admin: admin.clone(), session_count: 0, total_inferences: 0, version: 1 };
         env.storage().instance().set(&DataKey::State, &state);
-        env.storage().instance().set(&DataKey::Counter, &0u32);
-        env.events().publish(
-            (symbol_short!("init"),),
-            (admin,),
-        );
-        true
+        env.events().publish((symbol_short!("init"),), (admin,));
     }
 
-    pub fn version(env: Env) -> u32 {
-        let state: State = env.storage().instance().get(&DataKey::State)
-            .expect("Not initialized");
-        state.version
+    pub fn start_session(env: Env, operator: Address, model_id: u64) -> u64 {
+        operator.require_auth();
+        let mut state: MeterState = env.storage().instance()
+            .get(&DataKey::State).expect("Not initialized");
+        let session_id = state.session_count + 1;
+        let session = InferenceSession {
+            session_id,
+            model_id,
+            operator: operator.clone(),
+            started_at: env.ledger().timestamp(),
+            closed_at: 0,
+            inference_count: 0,
+            total_tokens: 0,
+        };
+        env.storage().persistent().set(&DataKey::Session(session_id), &session);
+        state.session_count = session_id;
+        env.storage().instance().set(&DataKey::State, &state);
+        env.events().publish((symbol_short!("session"),), (session_id, model_id, operator));
+        session_id
     }
 
-    pub fn get_state(env: Env) -> State {
-        env.storage().instance().get(&DataKey::State)
-            .expect("Not initialized")
+    pub fn get_session(env: Env, session_id: u64) -> InferenceSession {
+        env.storage().persistent()
+            .get(&DataKey::Session(session_id))
+            .expect("Session not found")
     }
 
-    pub fn increment(env: Env, caller: Address) -> u32 {
-        caller.require_auth();
-        let count: u32 = env.storage().instance().get(&DataKey::Counter).unwrap_or(0);
-        let new_count = count.checked_add(1).expect("Overflow");
-        env.storage().instance().set(&DataKey::Counter, &new_count);
-        new_count
-    }
-
-    pub fn get_count(env: Env) -> u32 {
-        env.storage().instance().get(&DataKey::Counter).unwrap_or(0)
+    pub fn get_state(env: Env) -> MeterState {
+        env.storage().instance()
+            .get(&DataKey::State).expect("Not initialized")
     }
 }
 
@@ -70,26 +86,17 @@ mod test {
     use soroban_sdk::{testutils::Address as _, Address, Env};
 
     #[test]
-    fn test_initialize() {
+    fn test_session_lifecycle() {
         let env = Env::default();
         env.mock_all_auths();
-        let contract_id = env.register_contract(None, UsageMeterContract);
+        let contract_id = env.register(UsageMeterContract, ());
         let client = UsageMeterContractClient::new(&env, &contract_id);
         let admin = Address::generate(&env);
-        assert!(client.initialize(&admin));
-        assert_eq!(client.version(), 1);
-    }
-
-    #[test]
-    fn test_increment() {
-        let env = Env::default();
-        env.mock_all_auths();
-        let contract_id = env.register_contract(None, UsageMeterContract);
-        let client = UsageMeterContractClient::new(&env, &contract_id);
-        let admin = Address::generate(&env);
+        let operator = Address::generate(&env);
         client.initialize(&admin);
-        assert_eq!(client.increment(&admin), 1);
-        assert_eq!(client.increment(&admin), 2);
-        assert_eq!(client.get_count(), 2);
+        let session_id = client.start_session(&operator, &1u64);
+        assert_eq!(session_id, 1);
+        let session = client.get_session(&1u64);
+        assert_eq!(session.model_id, 1);
     }
 }
